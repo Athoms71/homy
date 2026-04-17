@@ -28,7 +28,23 @@ export interface HouseholdMember {
 
 // ─── Shopping ─────────────────────────────────────────────────────────────────
 
-export type ShoppingCategory = "fruits_vegetables" | "meat_fish" | "dairy" | "bakery" | "frozen" | "drinks" | "hygiene" | "cleaning" | "other";
+export type ShoppingCategory =
+	| "fruits_vegetables"
+	| "meat_fish"
+	| "dairy"
+	| "bakery"
+	| "frozen"
+	| "drinks"
+	| "snacks"
+	| "canned"
+	| "condiments"
+	| "cereals"
+	| "hygiene"
+	| "cleaning"
+	| "baby"
+	| "pets"
+	| "pharmacy"
+	| "other";
 
 export interface ShoppingList {
 	id: string;

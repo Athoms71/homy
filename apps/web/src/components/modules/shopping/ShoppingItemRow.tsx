@@ -2,7 +2,7 @@
 
 import { useToggleShoppingItem, useDeleteShoppingItem } from '@/hooks/useShopping'
 import { getCategoryInfo } from '@/lib/categories'
-import { Trash2, AlertTriangle } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -26,20 +26,16 @@ export function ShoppingItemRow({ item, listId }: Props) {
   const isChecked = !!item.checked_by
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-3 px-4 py-3 rounded-xl transition group',
-        isChecked ? 'bg-gray-50 opacity-60' : 'bg-white hover:bg-gray-50'
-      )}
-    >
+    <div className={cn(
+      'flex items-center gap-3 px-4 py-3 rounded-xl transition',
+      isChecked ? 'bg-gray-50 opacity-60' : 'bg-white hover:bg-gray-50'
+    )}>
       {/* Checkbox */}
       <button
         onClick={() => toggle.mutate({ itemId: item.id, checked: !isChecked })}
         className={cn(
           'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition',
-          isChecked
-            ? 'bg-green-500 border-green-500'
-            : 'border-gray-300 hover:border-primary-400'
+          isChecked ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-primary-400'
         )}
       >
         {isChecked && (
@@ -64,15 +60,10 @@ export function ShoppingItemRow({ item, listId }: Props) {
         )}
       </div>
 
-      {/* Urgent */}
-      {item.is_urgent && !isChecked && (
-        <AlertTriangle size={15} className="text-orange-400 flex-shrink-0" />
-      )}
-
-      {/* Supprimer */}
+      {/* Supprimer — toujours visible */}
       <button
         onClick={() => remove.mutate(item.id)}
-        className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-400 transition flex-shrink-0"
+        className="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-400 transition flex-shrink-0"
       >
         <Trash2 size={15} />
       </button>

@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useShoppingItems, useClearCheckedItems, useArchiveShoppingList } from '@/hooks/useShopping'
+import { useShoppingItems, useClearCheckedItems, useDeleteShoppingList } from '@/hooks/useShopping'
 import { ShoppingItemRow } from './ShoppingItemRow'
 import { AddItemForm } from './AddItemForm'
-import { getCategoryInfo, CATEGORIES } from '@/lib/categories'
-import { Plus, Trash2, Archive, Loader2, Wifi } from 'lucide-react'
+import { CATEGORIES } from '@/lib/categories'
+import { Plus, Trash2, Loader2, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -14,12 +14,31 @@ interface Props {
   onBack: () => void
 }
 
+function ConfirmDialog({ message, onConfirm, onCancel }: { message: string; onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-safe">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-sm p-6 shadow-xl">
+        <p className="text-gray-800 font-medium text-center mb-6">{message}</p>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium">
+            Annuler
+          </button>
+          <button onClick={onConfirm} className="flex-1 py-3 rounded-xl bg-red-500 text-white font-semibold">
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function ShoppingListView({ list, householdId, onBack }: Props) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [filter, setFilter] = useState<string>('all')
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const { data: items = [], isLoading } = useShoppingItems(list.id)
   const clearChecked = useClearCheckedItems(list.id)
-  const archive = useArchiveShoppingList(householdId)
+  const deleteList = useDeleteShoppingList(householdId)
 
   const unchecked = items.filter(i => !i.checked_by)
   const checked = items.filter(i => i.checked_by)
@@ -28,49 +47,35 @@ export function ShoppingListView({ list, householdId, onBack }: Props) {
     ? unchecked
     : unchecked.filter(i => i.category === filter)
 
-  // Grouper par catégorie
   const grouped = CATEGORIES
-    .map(cat => ({
-      cat,
-      items: filteredUnchecked.filter(i => i.category === cat.value),
-    }))
+    .map(cat => ({ cat, items: filteredUnchecked.filter(i => i.category === cat.value) }))
     .filter(g => g.items.length > 0)
-
-  function handleArchive() {
-    if (!confirm(`Archiver la liste "${list.name}" ?`)) return
-    archive.mutate(list.id, { onSuccess: onBack })
-  }
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition text-sm">
-          ← Retour
+        <button onClick={onBack} className="p-2 rounded-xl text-gray-400 hover:text-gray-600 transition">
+          <ArrowLeft size={18} />
         </button>
         <div className="flex-1">
           <h2 className="font-bold text-gray-900 text-lg">{list.name}</h2>
-          <p className="text-gray-400 text-xs flex items-center gap-1">
-            <Wifi size={11} className="text-green-500" />
-            Synchronisé en temps réel
-          </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           {checked.length > 0 && (
             <button
               onClick={() => clearChecked.mutate()}
-              className="text-xs text-gray-400 hover:text-red-500 transition flex items-center gap-1"
+              className="text-xs text-gray-400 hover:text-red-500 transition flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-red-50"
             >
               <Trash2 size={13} />
               Vider cochés
             </button>
           )}
           <button
-            onClick={handleArchive}
-            className="text-xs text-gray-400 hover:text-gray-600 transition flex items-center gap-1"
+            onClick={() => setConfirmDelete(true)}
+            className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
           >
-            <Archive size={13} />
-            Archiver
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
@@ -106,8 +111,7 @@ export function ShoppingListView({ list, householdId, onBack }: Props) {
           <Loader2 className="animate-spin text-primary-600" size={24} />
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto space-y-4">
-          {/* Articles non cochés groupés */}
+        <div className="flex-1 overflow-y-auto space-y-4 pb-4">
           {grouped.length === 0 && unchecked.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
               <p className="text-4xl mb-3">🛒</p>
@@ -130,7 +134,6 @@ export function ShoppingListView({ list, householdId, onBack }: Props) {
             ))
           )}
 
-          {/* Articles cochés */}
           {checked.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2 px-1">
@@ -149,7 +152,7 @@ export function ShoppingListView({ list, householdId, onBack }: Props) {
       )}
 
       {/* Bouton ajouter */}
-      <div className="pt-4">
+      <div className="pt-2">
         {showAddForm ? (
           <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-lg">
             <h3 className="font-semibold text-gray-800 mb-4">Ajouter un article</h3>
@@ -171,6 +174,14 @@ export function ShoppingListView({ list, householdId, onBack }: Props) {
           </button>
         )}
       </div>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          message={`Supprimer la liste "${list.name}" ?`}
+          onConfirm={() => deleteList.mutate(list.id, { onSuccess: onBack })}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </div>
   )
 }
