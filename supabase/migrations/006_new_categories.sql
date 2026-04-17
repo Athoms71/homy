@@ -8,7 +8,5 @@ ALTER TABLE shopping_items DROP CONSTRAINT IF EXISTS shopping_items_category_che
 -- Les nouvelles valeurs: snacks, canned, condiments, cereals, baby, pets, pharmacy
 
 -- Pour bills: si vous voulez enforcer seulement monthly/annual
--- (optionnel — le frontend fait déjà le filtrage)
--- ALTER TABLE bills DROP CONSTRAINT IF EXISTS bills_frequency_check;
--- ALTER TABLE bills ADD CONSTRAINT bills_frequency_check
---   CHECK (frequency IN ('monthly', 'annual'));
+ALTER TABLE bills DROP CONSTRAINT IF EXISTS bills_frequency_check;
+ALTER TABLE bills ADD CONSTRAINT bills_frequency_check CHECK (frequency IN ('monthly', 'annual'));

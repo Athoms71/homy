@@ -30,20 +30,20 @@ export interface HouseholdMember {
 
 export type ShoppingCategory =
 	| "fruits_vegetables"
-	| "meat_fish"
+	| "meat"
+	| "fish"
 	| "dairy"
 	| "bakery"
 	| "frozen"
 	| "drinks"
 	| "snacks"
-	| "canned"
+	| "grocery"
+	| "bio"
 	| "condiments"
-	| "cereals"
 	| "hygiene"
 	| "cleaning"
 	| "baby"
 	| "pets"
-	| "pharmacy"
 	| "other";
 
 export interface ShoppingList {

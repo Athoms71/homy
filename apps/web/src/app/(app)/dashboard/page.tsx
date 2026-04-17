@@ -15,6 +15,7 @@ import { getBillStatus, getMonthlyEstimate } from "@/services/bills.service";
 import { Loader2, Bell, ShoppingCart, DollarSign, FileText, Users, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useHouseholdStore } from "@/store/householdStore";
 
 // ─── KPI Cards ────────────────────────────────────────────────────────────────
 
@@ -120,7 +121,8 @@ function AlertBanner({ householdId }: { householdId: string }) {
 export default function DashboardPage() {
 	const [userName, setUserName] = useState("");
 	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-	const [householdId, setHouseholdId] = useState<string | null>(null);
+	const householdId = useHouseholdStore((state) => state.activeHouseholdId);
+	const setHouseholdId = useHouseholdStore((state) => state.setActiveHouseholdId);
 	const [greeting, setGreeting] = useState("Bonjour");
 
 	const { data: householdsData, isLoading } = useMyHouseholds();
