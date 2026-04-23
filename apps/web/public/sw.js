@@ -1,5 +1,5 @@
 const CACHE_NAME = "homy-v2";
-const STATIC_ASSETS = ["/", "/dashboard", "/shopping", "/expenses", "/bills", "/calendar", "/manifest.json", "/icons/icon-192.png", "/icons/icon-512.png"];
+const STATIC_ASSETS = ["/", "/dashboard", "/shopping", "/expenses", "/bills", "/calendar", "/manifest.json"];
 
 // ─── Installation ─────────────────────────────────────────────────────────────
 self.addEventListener("install", (event) => {
