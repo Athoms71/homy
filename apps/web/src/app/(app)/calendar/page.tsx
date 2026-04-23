@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useMyHouseholds, useHouseholdMembers } from "@/hooks/useHousehold";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent } from "@/hooks/useCalendar";
-import { ChevronLeft, ChevronRight, Plus, X, Loader2, Clock, MapPin, Repeat, Bell, Trash2, Home, ArrowLeft } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Plus, X, Loader2, Clock, MapPin, Repeat, Bell, Trash2, Home, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useHouseholdStore } from "@/store/householdStore";
@@ -173,8 +173,8 @@ function EventModal({
 	const [location, setLocation] = useState(event?.location ?? "");
 	const [color, setColor] = useState<EventColor>(event?.color ?? "blue");
 	const [allDay, setAllDay] = useState(event?.all_day ?? true);
-	const [startDate, setStartDate] = useState(event ? new Date(event.starts_at).toISOString().split("T")[0] : defaultDateStr);
-	const [endDate, setEndDate] = useState(event ? new Date(event.ends_at).toISOString().split("T")[0] : defaultDateStr);
+	const [startDate, setStartDate] = useState(event ? toDatetimeLocal(event.starts_at).split("T")[0] : defaultDateStr);
+	const [endDate, setEndDate] = useState(event ? toDatetimeLocal(event.ends_at).split("T")[0] : defaultDateStr);
 	const [startTime, setStartTime] = useState(event && !event.all_day ? toDatetimeLocal(event.starts_at).split("T")[1] : "09:00");
 	const [endTime, setEndTime] = useState(event && !event.all_day ? toDatetimeLocal(event.ends_at).split("T")[1] : "10:00");
 	const [recurrence, setRecurrence] = useState<RecurrenceFreq>(event?.recurrence ?? "none");
@@ -208,8 +208,8 @@ function EventModal({
 
 	return (
 		<>
-			<div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-0 sm:px-4">
-				<div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-xl max-h-[88vh] overflow-y-auto pb-safe">
+			<div className="fixed bottom-16 sm:bottom-0 inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-0 sm:px-4">
+				<div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-xl max-h-[70vh] sm:max-h-[80vh] overflow-y-auto pb-safe">
 					<div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
 						<h2 className="text-lg font-bold text-gray-900">{isEdit ? "Modifier l'événement" : "Nouvel événement"}</h2>
 						<div className="flex items-center gap-2">
@@ -677,14 +677,27 @@ export default function CalendarPage() {
 						<h1 className="text-2xl font-bold text-gray-900">📅 Calendrier</h1>
 					</div>
 				</div>
-				{/* Bouton + en haut droite desktop, en bas mobile via layout */}
-				<button onClick={openCreateModal} className="hidden sm:flex items-center gap-1.5 bg-primary-600 text-white text-sm font-medium px-3 py-2 rounded-xl hover:bg-primary-700 transition">
-					<Plus size={16} /> Ajouter
-				</button>
+
+				<div className="flex items-center gap-2">
+					{/* Bouton settings mobile — haut droite */}
+					<div className="md:hidden flex">
+						<Link href="/settings" className="p-2 rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-gray-700 transition shadow-sm">
+							<Settings size={20} />
+						</Link>
+					</div>
+
+					{/* Bouton + en haut droite desktop */}
+					<button
+						onClick={openCreateModal}
+						className="hidden sm:flex items-center gap-1.5 bg-primary-600 text-white text-sm font-medium px-3 py-2 rounded-xl hover:bg-primary-700 transition"
+					>
+						<Plus size={18} />
+					</button>
+				</div>
 			</div>
 
 			{/* Barre navigation */}
-			<div className="flex items-center justify-between mb-4 bg-white rounded-2xl border border-gray-200 px-4 py-3">
+			<div className="flex items-center justify-between mb-4 bg-white rounded-2xl border border-gray-200 px-4 py-2">
 				<div className="flex items-center gap-1">
 					<button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100 transition">
 						<ChevronLeft size={18} className="text-gray-600" />
@@ -697,7 +710,7 @@ export default function CalendarPage() {
 				<button
 					onClick={() => {
 						setCurrentDate(new Date());
-						setView("day");
+						setView("month");
 					}}
 					className="text-xs text-primary-600 font-medium px-3 py-1.5 rounded-lg hover:bg-primary-50 transition"
 				>

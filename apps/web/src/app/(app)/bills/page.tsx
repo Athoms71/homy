@@ -6,7 +6,7 @@ import { useBills } from "@/hooks/useBills";
 import { BillCard } from "@/components/modules/bills/BillCard";
 import { AddBillForm } from "@/components/modules/bills/AddBillForm";
 import { getMonthlyEstimate, getBillStatus } from "@/services/bills.service";
-import { FileText, Plus, Loader2, Home, AlertTriangle, TrendingDown } from "lucide-react";
+import { X, Settings, FileText, Plus, Loader2, Home, AlertTriangle, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useHouseholdStore } from "@/store/householdStore";
@@ -74,10 +74,22 @@ export default function BillsPage() {
 					<h1 className="text-2xl font-bold text-gray-900">📄 Factures</h1>
 					<p className="text-gray-500 text-sm mt-1">Suivi des échéances et abonnements</p>
 				</div>
-				<button onClick={() => setShowAdd(true)} className="flex items-center gap-1.5 bg-primary-600 text-white text-sm font-medium px-3 py-2 rounded-xl hover:bg-primary-700 transition">
-					<Plus size={16} />
-					<span className="hidden sm:inline">Ajouter</span>
-				</button>
+				<div className="flex items-center gap-2">
+					{/* Bouton settings mobile — haut droite */}
+					<div className="md:hidden flex">
+						<Link href="/settings" className="p-2 rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-gray-700 transition shadow-sm">
+							<Settings size={20} />
+						</Link>
+					</div>
+
+					{/* Bouton + en haut droite desktop */}
+					<button
+						onClick={() => setShowAdd(true)}
+						className="hidden sm:flex items-center gap-1.5 bg-primary-600 text-white text-sm font-medium px-3 py-2 rounded-xl hover:bg-primary-700 transition"
+					>
+						<Plus size={18} />
+					</button>
+				</div>
 			</div>
 
 			{bills.length > 0 && (
@@ -143,14 +155,23 @@ export default function BillsPage() {
 				</div>
 			)}
 
+			{/* Bouton + mobile fixe en bas */}
+			<button onClick={() => setShowAdd(true)} className="sm:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary-600 text-white rounded-full shadow-lg flex items-center justify-center z-40">
+				<Plus size={24} />
+			</button>
+
 			{showAdd && householdId && (
-				<div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
-					<div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-						<h2 className="text-lg font-bold text-gray-900 mb-5">📄 Nouvelle facture</h2>
+				<div className="fixed bottom-16 sm:bottom-0 inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-0 sm:px-4">
+					<div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-xl max-h-[70vh] sm:max-h-[80vh] overflow-y-auto p-6">
+						<div className="flex items-center justify-between mb-4 top-0 bg-white z-10">
+							<h2 className="text-lg font-bold text-gray-900">📄 Nouvelle facture</h2>
+							<div className="flex items-center gap-2">
+								<button onClick={() => setShowAdd(false)} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 transition">
+									<X size={18} />
+								</button>
+							</div>
+						</div>
 						<AddBillForm householdId={householdId} onClose={() => setShowAdd(false)} />
-						<button onClick={() => setShowAdd(false)} className="w-full mt-2 text-sm text-gray-400 hover:text-gray-600 py-2">
-							Annuler
-						</button>
 					</div>
 				</div>
 			)}
