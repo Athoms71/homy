@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useMyHouseholds, useHouseholdMembers } from "@/hooks/useHousehold";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent } from "@/hooks/useCalendar";
-import { Settings, ChevronLeft, ChevronRight, Plus, X, Loader2, Clock, MapPin, Repeat, Bell, Trash2, Home, ArrowLeft } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Plus, X, Loader2, Clock, MapPin, Bell, Trash2, Home, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useHouseholdStore } from "@/store/householdStore";
@@ -12,7 +13,6 @@ import { useHouseholdStore } from "@/store/householdStore";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type EventColor = "blue" | "green" | "red" | "orange" | "purple" | "pink" | "yellow" | "gray";
-type RecurrenceFreq = "none" | "daily" | "weekly" | "monthly" | "yearly";
 type ViewMode = "month" | "day";
 
 const COLOR_MAP: Record<EventColor, { bar: string; bg: string; text: string }> = {
@@ -35,14 +35,6 @@ const DOT_CLASSES: Record<EventColor, string> = {
 	pink: "bg-pink-500",
 	yellow: "bg-yellow-500",
 	gray: "bg-gray-400",
-};
-
-const RECURRENCE_LABELS: Record<RecurrenceFreq, string> = {
-	none: "Pas de répétition",
-	daily: "Chaque jour",
-	weekly: "Chaque semaine",
-	monthly: "Chaque mois",
-	yearly: "Chaque année",
 };
 
 const REMINDER_OPTIONS = [
@@ -97,26 +89,6 @@ function eventCoversDay(ev: any, day: Date): boolean {
 
 function isFirstDayOfEvent(ev: any, day: Date): boolean {
 	return isSameDay(new Date(ev.starts_at), day);
-}
-
-// ─── Confirmation Dialog ──────────────────────────────────────────────────────
-
-function ConfirmDialog({ message, onConfirm, onCancel }: { message: string; onConfirm: () => void; onCancel: () => void }) {
-	return (
-		<div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[60] px-4 pb-safe">
-			<div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-sm p-6 shadow-xl mb-0 sm:mb-0">
-				<p className="text-gray-800 font-medium text-center mb-6">{message}</p>
-				<div className="flex gap-3">
-					<button onClick={onCancel} className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium">
-						Annuler
-					</button>
-					<button onClick={onConfirm} className="flex-1 py-3 rounded-xl bg-red-500 text-white font-semibold">
-						Supprimer
-					</button>
-				</div>
-			</div>
-		</div>
-	);
 }
 
 // ─── EventBar — barre style Google Calendar ───────────────────────────────────
@@ -177,7 +149,6 @@ function EventModal({
 	const [endDate, setEndDate] = useState(event ? toDatetimeLocal(event.ends_at).split("T")[0] : defaultDateStr);
 	const [startTime, setStartTime] = useState(event && !event.all_day ? toDatetimeLocal(event.starts_at).split("T")[1] : "09:00");
 	const [endTime, setEndTime] = useState(event && !event.all_day ? toDatetimeLocal(event.ends_at).split("T")[1] : "10:00");
-	const [recurrence, setRecurrence] = useState<RecurrenceFreq>(event?.recurrence ?? "none");
 	const [reminders, setReminders] = useState<number[]>(event?.reminders ?? [60]);
 
 	const colors: EventColor[] = ["blue", "green", "red", "orange", "purple", "pink", "yellow", "gray"];
@@ -196,7 +167,6 @@ function EventModal({
 			starts_at: starts.toISOString(),
 			ends_at: ends.toISOString(),
 			all_day: allDay,
-			recurrence,
 			reminders,
 		};
 		if (isEdit) await update.mutateAsync({ id: event.id, ...payload });
@@ -329,27 +299,6 @@ function EventModal({
 							className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:border-primary-500 outline-none resize-none"
 						/>
 
-						{/* Récurrence */}
-						{canEdit && (
-							<div>
-								<label className="flex items-center gap-2 text-sm text-gray-500 font-medium mb-1">
-									<Repeat size={15} /> Répétition
-								</label>
-								<select
-									value={recurrence}
-									onChange={(e) => setRecurrence(e.target.value as RecurrenceFreq)}
-									className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:border-primary-500 outline-none bg-white"
-								>
-									{(Object.entries(RECURRENCE_LABELS) as [RecurrenceFreq, string][]).map(([val, label]) => (
-										<option key={val} value={val}>
-											{label}
-										</option>
-									))}
-								</select>
-							</div>
-						)}
-
-						{/* Rappels */}
 						{canEdit && (
 							<div>
 								<label className="flex items-center gap-2 text-sm text-gray-500 font-medium mb-2">
